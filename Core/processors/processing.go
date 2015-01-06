@@ -9,7 +9,7 @@ func StartProcessing(cfg config.RtConfig) (procChan chan Processor) {
 
 	procChan = make(chan Processor)
 	go processingListener(procChan, agent.NewAgent(cfg))
-
+	return 
 }
 
 func processingListener(procChan chan Processor, storeAgent agent.StorageAgent) {

@@ -41,8 +41,8 @@ func (c core) routeIncomingAppMsg(appInChannel chan AppMessage) {
 	for AppMessage := range appInChannel {
 
 		aursirMessage, err := AppMessage.AppMsg.Decode()
-		log.Println("DEBUG",aursirMessage)
-		log.Println("DEBUG",string(AppMessage.AppMsg.Msg),err)
+		//log.Println("DEBUG",aursirMessage)
+		//log.Println("DEBUG",string(AppMessage.AppMsg.Msg),err)
 
 
 		if err == nil {
@@ -308,6 +308,8 @@ func (c core) createChainCall(senderId string, prevResult aursir4go.AurSirResult
 
 	codec := aursir4go.GetCodec(prevResult.Codec)
 	if codec==nil {
+		log.Println("CORE","Error creating next call in chain, missing Codec in PrevResult")
+
 		return
 	}
 	var tmp interface {}
@@ -332,6 +334,10 @@ func (c core) createChainCall(senderId string, prevResult aursir4go.AurSirResult
 	if err != nil {
 		return
 	}
+
+	if cc.Tags == nil {
+		cc.Tags = []string{}
+	}
 	request := aursir4go.AurSirRequest{
 		cc.AppKeyName,
 		cc.FunctionName,
@@ -352,6 +358,8 @@ func (c core) createChainCall(senderId string, prevResult aursir4go.AurSirResult
 	reqReg, ok := c.storageAgent.Write(storagecore.AddReqRequest{senderId,request}).(storagecore.ReqRegistered)
 	//log.Println(ok,reqReg)
 	if ok{
+		log.Println("CORE","Sucessfully created callchain, transmitting")
+
 		c.transmitRequests(request,reqReg)
 	}
 }
@@ -368,18 +376,34 @@ func (c core) transmitRequests(request aursir4go.AurSirRequest, targets storagec
 		}
 		var rm aursir4go.AppMessage
 
-		if recode {
-			var tmp interface {}
+		if recode{
+			var err error
+			log.Println("CORE","recoding for transmission to",codecs[0])
+			var tmp map[string]interface {}
 			src := aursir4go.GetCodec(request.Codec)
 			target := aursir4go.GetCodec(codecs[0])
-			src.Decode(request.Request, tmp)
+			src.Decode(request.Request, &tmp)
 			newreq := request
 			newreq.Codec = codecs[0]
-			newreq.Request,_ = target.Encode(tmp)
+			if newreq.Tags == nil {
+				newreq.Tags = []string{}
+			}
+			//log.Println("CORE","Error transmitting, recoding failed", string(request.Request))
+			//log.Println("CORE","Error transmitting, recoding failed", tmp)
+
+			newreq.Request,err  = target.Encode(tmp)
+			if err != nil{
+				log.Println("CORE","Error transmitting, recoding failed", err)
+
+			}
+			log.Println("CORE","Sucessfully recoded request")
+
 			rm.Encode(newreq,"JSON")
 		} else {
 			rm.Encode(request,"JSON")
 		}
+		log.Println("CORE","Transmitting")
+
 		c.appOutChannel <-AppMessage{exp, rm}
 	}
 }

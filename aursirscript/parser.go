@@ -16,7 +16,7 @@ func (p *AurSirScriptParser) ParseLine(line []byte) (err error){
 	}
 
 	for len(line)!= 0 {
-		literal, line := GetLiteral(line)
+		literal, _ := GetLiteral(line)
 		if IsSymbol(literal){
 			p.TerminateStatement(literal)
 		} else {

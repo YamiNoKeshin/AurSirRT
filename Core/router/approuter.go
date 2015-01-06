@@ -1,4 +1,5 @@
 package router
+/*
 
 import (
 	"log"
@@ -57,3 +58,4 @@ func RouteIncomingAppMsg(appInChannel chan core.AppMessage, procChan chan proces
 		}
 	}
 }
+*/

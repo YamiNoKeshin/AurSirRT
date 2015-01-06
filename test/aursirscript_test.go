@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"os"
 	"testing"
-	"log"
+
 	"github.com/joernweissenborn/aursirrt/aursirscript"
 )
 

@@ -1,5 +1,4 @@
 package test
-/*
 
 
 import (
@@ -77,6 +76,81 @@ func TestFunCall121(T *testing.T) {
 		T.Error("got wrong result parameter")
 	}
 }
+func Test10FunCall121(T *testing.T) {
+	importer, imp := testimporter()
+	defer importer.Close()
+	exporter, exp := testexporter()
+	defer exporter.Close()
+	for i:=0;i<10;i++ {
+	res, _ := imp.CallFunction(aursir4go.HelloAurSirAppKey.Functions[0].Name, aursir4go.SayHelloReq{"AHOI"}, aursir4go.ONE2ONE)
+	req := <-exp.Request
+	var SayHelloReq aursir4go.SayHelloReq
+	req.Decode(&SayHelloReq)
+	if SayHelloReq.Greeting != "AHOI" {
+		T.Error("got wrong request parameter")
+	}
+	err := exp.Reply(&req, aursir4go.SayHelloRes{"MOINSEN"})
+	if err != nil {
+		T.Error(err)
+	}
+	var result aursir4go.SayHelloRes
+	asres := <-res
+	err = asres.Decode(&result)
+	if err != nil {
+		T.Error(err)
+	}
+	log.Println(result)
+	if result.Answer != "MOINSEN" {
+		T.Error("got wrong result parameter")
+	}
+	}
+}
+
+func TestFunCallN2N(T *testing.T) {
+	importer1, imp1 := testimporter()
+	defer importer1.Close()
+	imp1.ListenToFunction("SayHello")
+	importer2, imp2 := testimporter()
+	imp2.ListenToFunction("SayHello")
+	defer importer2.Close()
+	exporter1, exp1 := testexporter()
+	defer exporter1.Close()
+exporter2, exp2 := testexporter()
+	defer exporter2.Close()
+
+	imp2.CallFunction(aursir4go.HelloAurSirAppKey.Functions[0].Name, aursir4go.SayHelloReq{"AHOI"}, aursir4go.MANY2MANY)
+	req := <-exp1.Request
+	var SayHelloReq aursir4go.SayHelloReq
+	req.Decode(&SayHelloReq)
+	if SayHelloReq.Greeting != "AHOI" {
+		T.Error("got wrong request parameter")
+	}
+	err := exp1.Reply(&req, aursir4go.SayHelloRes{"MOINSEN"})
+	if err != nil {
+		T.Error(err)
+	}
+	req = <-exp2.Request
+	req.Decode(&SayHelloReq)
+	if SayHelloReq.Greeting != "AHOI" {
+		T.Error("got wrong request parameter")
+	}
+	err = exp2.Reply(&req, aursir4go.SayHelloRes{"MOINSEN"})
+	if err != nil {
+		T.Error(err)
+	}
+	var res1 aursir4go.SayHelloRes
+	imp1.Listen().Decode(&res1)
+	log.Println("res1", res1)
+	if res1.Answer != "MOINSEN" {
+		T.Error("got wrong result parameter")
+	}
+	var res2 aursir4go.SayHelloRes
+	imp2.Listen().Decode(&res2)
+	log.Println("res2", res2)
+	if res2.Answer != "MOINSEN" {
+		T.Error("got wrong result parameter")
+	}
+}
 
 func TestFunCallN21(T *testing.T) {
 	importer1, imp1 := testimporter()
@@ -139,6 +213,31 @@ func TestDelayedExporter(T *testing.T) {
 		T.Error("got wrong result parameter")
 	}
 }
+//
+//func TestExporterImporterIfaceBlocking(T *testing.T) {
+//	importer, imp := testimporter()
+//	defer importer.Close()
+//	exporter1, exp1 := testexporter()
+//	defer exporter1.Close()
+//	exporter2, exp2 := testexporterctrstr()
+//	defer exporter2.Close()
+//
+//	imp2:= exporter1.AddImport(aursir4go.CountStringKey, nil)
+//
+//	res1, _ := imp2.CallFunction(aursir4go.CountStringKey.Functions[0].Name, aursir4go.CountStringReq{"AHOI1"}, aursir4go.ONE2ONE)
+//	res2, _ := imp.CallFunction(aursir4go.HelloAurSirAppKey.Functions[0].Name, aursir4go.SayHelloReq{"AHOI2"}, aursir4go.ONE2ONE)
+//	req := <-exp2.Request
+//
+//	exp2.Reply(&req, aursir4go.CountStringRes{1})
+//	<-res1
+//	req = <-exp1.Request
+//	exp1.Reply(&req, aursir4go.SayHelloRes{"MOINSEN"})
+//
+//	<-res2
+//
+//}
+
+
 
 func TestTagging(T *testing.T) {
 	importer, imp := testimporter()
@@ -179,6 +278,8 @@ func TestTagging(T *testing.T) {
 		T.Error("could not connect to appkey")
 	}
 }
+
+
 
 func TestCallChain(T *testing.T) {
 	importer, imp := testimporter()
@@ -367,4 +468,3 @@ func testexporterctrstr() (*aursir4go.AurSirInterface, *aursir4go.ExportedAppKey
 	return iface, exp
 
 }
-*/

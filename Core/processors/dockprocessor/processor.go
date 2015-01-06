@@ -17,10 +17,10 @@ func (p DockProcessor) Process() {
 
 	app := p.GetApp()
 
-	if !app.Exists {
+	if !app.Exists("") {
 		app.Create(p.AppId,p.DockMessage)
 	}
 
 }
 
-func registerApp()
+func registerApp(){}

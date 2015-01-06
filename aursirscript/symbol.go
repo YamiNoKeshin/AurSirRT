@@ -18,17 +18,17 @@ func IsSymbol(code []byte) (isSymbol bool){
 
 func GetSymbol(code []byte) (Symbol []byte){
 
-	rune, size := utf8.DecodeRune(code)
+	/*//rune, size := utf8.DecodeRune(code)
 	switch rune {
 
 	case '#', '-', '>', '<' :
-		Symbol=rune
+		//Symbol=rune
 
 	case '-':
 		if IsSymbol(code[size:]){
-			Symbol = rune + GetSymbol(code[size])
+		//	Symbol = rune + GetSymbol(code[size])
 		}
 	}
-
+*/
 	return
 }
